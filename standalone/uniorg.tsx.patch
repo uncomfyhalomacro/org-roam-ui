@@ -28,7 +28,7 @@
 +            else
 +                setPreviewText(res)
 +        }else
-+            setPreviewText('')
++            setPreviewText('(no content yet)')
        })
        .catch((e) => {
          setPreviewText('(could not find node)')
