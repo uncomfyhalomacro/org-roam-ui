@@ -1,0 +1,11 @@
+--- uniorg.tsx.orig	2023-07-20 08:26:07.048622516 +0800
++++ uniorg.tsx	2023-07-20 08:26:37.672047324 +0800
+@@ -36,7 +36,7 @@
+ 
+   const id = encodeURIComponent(encodeURIComponent(previewNode.id))
+   useEffect(() => {
+-    fetch(`http://localhost:35901/node/${id}`)
++    fetch(window.location.href + `notes/${id}`)
+       .then((res) => {
+         return res.text()
+       })

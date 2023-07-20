@@ -1,0 +1,20 @@
+--- OrgImage.tsx.orig	2023-07-20 08:35:20.390765618 +0800
++++ OrgImage.tsx	2023-07-20 08:36:43.544498976 +0800
+@@ -28,7 +28,7 @@
+     return `${src}`
+   }
+   const homeLoader = ({ src, width, quality }: { [key: string]: string | number }) => {
+-    return `http://localhost:35901/img/${src}`
++    return window.location.href + `img/${src}`
+   }
+ 
+   if (src.replaceAll(/(http)?.*/g, '$1')) {
+@@ -47,7 +47,7 @@
+ 
+   return (
+     <Container my={4} position="relative">
+-      <img alt="Wow, an image." src={`http://localhost:35901/img/${encodedPath}`} />
++      <img alt="Wow, an image." src={window.location.href + `img/${encodedPath}`} />
+     </Container>
+   )
+ }
