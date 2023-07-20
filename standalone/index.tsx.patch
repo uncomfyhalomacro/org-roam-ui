@@ -1,6 +1,12 @@
---- index.tsx.orig	2023-07-20 08:51:18.781333657 +0800
-+++ index.tsx	2023-07-20 08:52:40.924982453 +0800
-@@ -346,6 +346,7 @@
+--- index.tsx.orig	2023-07-20 08:56:47.982597952 +0800
++++ index.tsx	2023-07-20 08:57:50.096169841 +0800
+@@ -1,4 +1,5 @@
+ import { HamburgerIcon } from '@chakra-ui/icons'
++import graphDataJson from '../graphdata.json'
+ import {
+   Box,
+   Flex,
+@@ -346,6 +347,7 @@
    }
    useEffect(() => {
      if (!graphData) {
@@ -8,7 +14,7 @@
        return
      }
      currentGraphDataRef.current = graphData
-@@ -429,58 +430,6 @@
+@@ -429,58 +431,6 @@
    }
  
    useEffect(() => {
