@@ -14,7 +14,7 @@ export type OrgRoamNode = {
   properties: {
     [key: string]: string | number
   }
-  tags: string[]
+  tags: string[] | null
 }
 
 export type OrgRoamLink = {
