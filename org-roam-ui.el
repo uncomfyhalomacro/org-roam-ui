@@ -452,9 +452,9 @@ unchanged."
     (when old
       (message "[org-roam-ui] You are not using the latest version of org-roam.
 This database model won't be supported in the future, please consider upgrading."))
-    (websocket-send-text org-roam-ui-ws-socket (json-encode
+    (json-encode
                                                 `((type . "graphdata")
-                                                  (data . ,response))))))
+                                                  (data . ,response)))))
 
 (defun org-roam-ui--send-graphdata ()
   "Send roam data through websocket to org-roam-ui."
