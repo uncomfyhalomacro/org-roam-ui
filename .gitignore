@@ -14,6 +14,10 @@
 # generated app
 /out/
 
+# Patches
+*.rej
+*.orig
+
 # production
 /build
 
