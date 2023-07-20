@@ -1,5 +1,5 @@
---- contextmenu.tsx.orig	2023-07-20 20:40:53.812038453 +0800
-+++ contextmenu.tsx	2023-07-20 20:44:45.798776095 +0800
+--- contextmenu.tsx.orig	2023-07-20 21:06:40.406265911 +0800
++++ contextmenu.tsx	2023-07-20 21:08:18.099526951 +0800
 @@ -125,21 +125,6 @@
                    </MenuItem>
                  </>
@@ -22,18 +22,10 @@
                {scope.nodeIds.length === 0 && (
                  <MenuItem icon={<BiNetworkChart />} onClick={() => handleLocal(target!, 'replace')}>
                    Open local graph
-@@ -175,77 +160,6 @@
-                             </Box>
-                         </MenuItem> */}
- 
--              <MenuItem
--                icon={<ViewIcon />}
--                onClick={() => {
--                  setPreviewNode(target)
--                }}
--              >
--                Preview
--              </MenuItem>
+@@ -183,69 +168,12 @@
+               >
+                 Preview
+               </MenuItem>
 -              {target?.level === 0 && (
 -                <MenuItem
 -                  closeOnSelect={false}
@@ -44,12 +36,12 @@
 -                  Permanently delete note
 -                </MenuItem>
 -              )}
--            </>
--          ) : (
--            <TagMenu {...{ target, tagColors, filter, setTagColors, setFilter }} />
--          )}
--        </MenuList>
--      </Menu>
+             </>
+           ) : (
+             <TagMenu {...{ target, tagColors, filter, setTagColors, setFilter }} />
+           )}
+         </MenuList>
+       </Menu>
 -      {typeof target !== 'string' && (
 -        <Modal isCentered isOpen={isOpen} onClose={onClose}>
 -          <ModalOverlay />

@@ -47,8 +47,8 @@
 (defvar org-roam-ui-root-dir
   (concat (file-name-directory
            (expand-file-name (or
-                    load-file-name
-                    buffer-file-name)))
+                              load-file-name
+                              buffer-file-name)))
           ".")
   "Root directory of the org-roam-ui project.")
 
@@ -230,9 +230,9 @@ Takes _WS and FRAME as arguments."
 (defun org-roam-ui--on-msg-open-node (data)
   "Open a node when receiving DATA from the websocket."
   (let* ((id (alist-get 'id data))
-          (node (org-roam-node-from-id id))
-          (pos (org-roam-node-point node))
-          (buf (find-file-noselect (org-roam-node-file node))))
+         (node (org-roam-node-from-id id))
+         (pos (org-roam-node-point node))
+         (buf (find-file-noselect (org-roam-node-file node))))
     (run-hook-with-args 'org-roam-ui-before-open-node-functions id)
     (unless (window-live-p org-roam-ui--window)
       (if-let ((windows (window-list))
@@ -427,13 +427,13 @@ unchanged."
                                    links-with-empty-refs)))
          (nodes-db-rows (org-roam-ui--get-nodes))
          (fake-nodes (seq-map #'org-roam-ui--create-fake-node empty-refs))
-           ;; Try to update real nodes that are reference with a title build
-           ;; from their bibliography entry. Check configuration here for avoid
-           ;; unneeded iteration though nodes.
+         ;; Try to update real nodes that are reference with a title build
+         ;; from their bibliography entry. Check configuration here for avoid
+         ;; unneeded iteration though nodes.
          (retitled-nodes-db-rows (if org-roam-ui-retitle-ref-nodes
-                                    (seq-map #'org-roam-ui--retitle-node
-                                             nodes-db-rows)
-                                  nodes-db-rows))
+                                     (seq-map #'org-roam-ui--retitle-node
+                                              nodes-db-rows)
+                                   nodes-db-rows))
          (complete-nodes-db-rows (append retitled-nodes-db-rows fake-nodes))
          (response `((nodes . ,(mapcar
                                 (apply-partially
@@ -474,51 +474,51 @@ This database model won't be supported in the future, please consider upgrading.
 (defun org-roam-ui--get-nodes ()
   "."
   (org-roam-db-query [:select [id
-                                file
-                                title
-                                level
-                                pos
-                                olp
-                                properties
-                                (funcall group-concat tag
-                                         (emacsql-escape-raw \, ))]
-                       :as tags
-                       :from nodes
-                       :left-join tags
-                       :on (= id node_id)
-                       :group :by id]))
+                               file
+                               title
+                               level
+                               pos
+                               olp
+                               properties
+                               (funcall group-concat tag
+                                        (emacsql-escape-raw \, ))]
+                              :as tags
+                              :from nodes
+                              :left-join tags
+                              :on (= id node_id)
+                              :group :by id]))
 
 (defun org-roam-ui--get-links (&optional old)
   "Get the cites and links tables as rows from the org-roam db.
 Optionally set OLD to t to use the old db model (where the cites
 were in the same table as the links)."
-(if (not old)
+  (if (not old)
+      (org-roam-db-query
+       `[:select  [links:source
+                   links:dest
+                   links:type]
+                  :from links
+                  :where (= links:type "id")])
+    ;; Left outer join on refs means any id link (or cite link without a
+    ;; corresponding node) will have 'nil for the `refs:node-id' value. Any
+    ;; cite link where a node has that `:ROAM_REFS:' will have a value.
     (org-roam-db-query
-     `[:select  [links:source
-                 links:dest
-                 links:type]
-       :from links
-       :where (= links:type "id")])
-  ;; Left outer join on refs means any id link (or cite link without a
-  ;; corresponding node) will have 'nil for the `refs:node-id' value. Any
-  ;; cite link where a node has that `:ROAM_REFS:' will have a value.
-  (org-roam-db-query
-   `[:select [links:source
-              links:dest
-              links:type
-              refs:node-id]
-     :from links
-     :left :outer :join refs :on (= links:dest refs:ref)
-     :where (or
-             (= links:type "id")
-             (like links:type "%cite%"))])))
+     `[:select [links:source
+                links:dest
+                links:type
+                refs:node-id]
+               :from links
+               :left :outer :join refs :on (= links:dest refs:ref)
+               :where (or
+                       (= links:type "id")
+                       (like links:type "%cite%"))])))
 
 (defun org-roam-ui--get-cites ()
   "Get the citations when using the new db-model."
   (org-roam-db-query
    `[:select [citations:node-id citations:cite-key refs:node-id]
-     :from citations
-     :left :outer :join refs :on (= citations:cite-key refs:ref)]))
+             :from citations
+             :left :outer :join refs :on (= citations:cite-key refs:ref)]))
 
 (defun org-roam-ui--separate-ref-links (links &optional old)
   "Create separate entries for LINKS with existing reference nodes.
@@ -528,21 +528,21 @@ Convert any cite links that have nodes with associated refs to an
 id based link of type `ref' while removing the 'nil `refs:node-id'
 from all other links."
 
- (if (not old)
+  (if (not old)
+      (seq-map
+       (lambda (link)
+         (pcase-let ((`(,source ,dest ,node-id) link))
+           (if node-id
+               (list source node-id "ref")
+             (list source dest "cite"))))
+       links)
     (seq-map
      (lambda (link)
-       (pcase-let ((`(,source ,dest ,node-id) link))
+       (pcase-let ((`(,source ,dest ,type ,node-id) link))
          (if node-id
              (list source node-id "ref")
-           (list source dest "cite"))))
-     links)
-   (seq-map
-    (lambda (link)
-      (pcase-let ((`(,source ,dest ,type ,node-id) link))
-        (if node-id
-            (list source node-id "ref")
-          (list source dest type))))
-    links)))
+           (list source dest type))))
+     links)))
 
 (defun org-roam-ui--update-current-node ()
   "Send the current node data to the web-socket."
@@ -581,29 +581,29 @@ from all other links."
 
 (defun org-roam-ui--send-variables (ws)
   "Send miscellaneous org-roam variables through the websocket WS."
-    (let ((daily-dir (if (boundp 'org-roam-dailies-directory)
-                         (if (file-name-absolute-p org-roam-dailies-directory)
-                             (expand-file-name org-roam-dailies-directory)
-                           (expand-file-name
-                            org-roam-dailies-directory
-                            org-roam-directory))
-                       "/dailies"))
-          (attach-dir (if (boundp 'org-attach-id-dir)
-                          org-attach-id-dir
-                        (expand-file-name ".attach/" org-directory)))
-          (sub-dirs (org-roam-ui-find-subdirectories)))
-      (websocket-send-text org-roam-ui-ws-socket
-                           (json-encode
-                            `((type . "variables")
-                              (data .
-                                    (("subDirs".
-                                      ,sub-dirs)
-                                     ("dailyDir" .
-                                      ,daily-dir)
-                                     ("attachDir" .
-                                      ,attach-dir)
-                                     ("roamDir" . ,org-roam-directory)
-                                     ("katexMacros" . ,org-roam-ui-latex-macros))))))))
+  (let ((daily-dir (if (boundp 'org-roam-dailies-directory)
+                       (if (file-name-absolute-p org-roam-dailies-directory)
+                           (expand-file-name org-roam-dailies-directory)
+                         (expand-file-name
+                          org-roam-dailies-directory
+                          org-roam-directory))
+                     "/dailies"))
+        (attach-dir (if (boundp 'org-attach-id-dir)
+                        org-attach-id-dir
+                      (expand-file-name ".attach/" org-directory)))
+        (sub-dirs (org-roam-ui-find-subdirectories)))
+    (websocket-send-text org-roam-ui-ws-socket
+                         (json-encode
+                          `((type . "variables")
+                            (data .
+                                  (("subDirs".
+                                    ,sub-dirs)
+                                   ("dailyDir" .
+                                    ,daily-dir)
+                                   ("attachDir" .
+                                    ,attach-dir)
+                                   ("roamDir" . ,org-roam-directory)
+                                   ("katexMacros" . ,org-roam-ui-latex-macros))))))))
 
 (defun org-roam-ui-sql-to-alist (column-names rows)
   "Convert sql result to alist for json encoding.
@@ -639,10 +639,10 @@ ROWS is the sql result, while COLUMN-NAMES is the columns to use."
 (defun org-roam-ui-find-subdirectories ()
   "Find all the subdirectories in the org-roam directory.
 TODO: Exclude org-attach dirs."
-   (seq-filter
-    (lambda (file) (and (file-directory-p file) (org-roam-ui-allowed-directory-p file)))
-    (directory-files-recursively org-roam-directory
-                                 ".*" t #'org-roam-ui-allowed-directory-p)))
+  (seq-filter
+   (lambda (file) (and (file-directory-p file) (org-roam-ui-allowed-directory-p file)))
+   (directory-files-recursively org-roam-directory
+                                ".*" t #'org-roam-ui-allowed-directory-p)))
 
 (defun org-roam-ui-allowed-directory-p (dir)
   "Check whether a DIR should be listed as a filterable dir.
@@ -664,15 +664,16 @@ Hides . directories."
   "Export `org-roam-ui's-data for usage as static webserver."
   (interactive)
   (let* ((dir (read-file-name "Specify output directory:"))
-        (graphdata-file (concat (file-name-as-directory dir) "graphdata.json"))
-        (notes-dir (concat (file-name-as-directory dir) "notes/")))
-    (org-roam-ui--export-graphdata graphdata-file)
+         (graphdata-file (concat (file-name-as-directory dir) "graphdata.json"))
+         (notes-dir (concat (file-name-as-directory dir) "notes/")))
     (make-directory notes-dir :parents)
+    (org-roam-ui--export-graphdata graphdata-file)
     (mapcar (lambda (id)
               (let* ((cid (car id))
                      (content (org-roam-ui--get-text cid)))
                 (write-region content nil (concat notes-dir cid) 'append)))
-            (org-roam-db-query "select id from nodes;"))))
+            (org-roam-db-query "select id from nodes;"))
+    (async-shell-command (concat (straight--repos-dir) "org-roam-ui/" "standalone/build-standalone-server.sh " dir " && return") nil nil)))
 
 ;;;###autoload
 (defun org-roam-ui-node-zoom (&optional id speed padding)
