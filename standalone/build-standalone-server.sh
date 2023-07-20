@@ -1,5 +1,7 @@
 #!/bin/bash
 
+export NODE_OPTIONS=--openssl-legacy-provider
+
 if [ -z "$1" ]
   then
     echo "Please supply path to the directory of exported org-roam-content"
