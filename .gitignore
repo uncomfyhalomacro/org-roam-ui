@@ -12,7 +12,7 @@
 /.next/
 
 # generated app
-/out/
+/out
 
 # production
 /build
