@@ -5,7 +5,7 @@
    }
    const homeLoader = ({ src, width, quality }: { [key: string]: string | number }) => {
 -    return `http://localhost:35901/img/${src}`
-+    return window.location.href + `img/${src}`
++    return `img/${src}`
    }
  
    if (src.replaceAll(/(http)?.*/g, '$1')) {
@@ -14,7 +14,7 @@
    return (
      <Container my={4} position="relative">
 -      <img alt="Wow, an image." src={`http://localhost:35901/img/${encodedPath}`} />
-+      <img alt="Wow, an image." src={window.location.href + `img/${encodedPath}`} />
++      <img alt="Wow, an image." src={`img/${encodedPath}`} />
      </Container>
    )
  }
