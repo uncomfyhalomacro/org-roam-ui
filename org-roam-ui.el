@@ -460,6 +460,9 @@ This database model won't be supported in the future, please consider upgrading.
   "Send roam data through websocket to org-roam-ui."
   (websocket-send-text org-roam-ui-ws-socket (org-roam-ui--make-graphdata)))
 
+(defun org-roam-ui--export-graphdata (file)
+  "Create a JSON-file containting graphdata."
+  (write-region (org-roam-ui--make-graphdata) nil file))
 
 (defun org-roam-ui--filter-citations (links)
   "Filter out the citations from LINKS."
@@ -657,6 +660,21 @@ Hides . directories."
            (format "http://localhost:%d" org-roam-ui-port)))
 
 ;;;###autoload
+(defun org-roam-ui-export ()
+  "Export `org-roam-ui's-data for usage as static webserver."
+  (interactive)
+  (let* ((dir (read-file-name "Specify output directory:"))
+        (graphdata-file (concat (file-name-as-directory dir) "graphdata.json"))
+        (notes-dir (concat (file-name-as-directory dir) "notes/")))
+    (org-roam-ui--export-graphdata graphdata-file)
+    (make-directory notes-dir :parents)
+    (mapcar (lambda (id)
+              (let* ((cid (car id))
+                     (content (org-roam-ui--get-text cid)))
+                (write-region content nil (concat notes-dir cid) 'append)))
+            (org-roam-db-query "select id from nodes;"))))
+
+;;;###autoload
 (defun org-roam-ui-node-zoom (&optional id speed padding)
   "Move the view of the graph to current node.
 or optionally a node of your choosing.
@@ -719,4 +737,3 @@ Optionally with ID (string), SPEED (number, ms) and PADDING (number, px)."
 
 (provide 'org-roam-ui)
 ;;; org-roam-ui.el ends here
-
