@@ -400,7 +400,7 @@ unchanged."
      ("FILELESS" . t))
    'nil))
 
-(defun org-roam-ui--send-graphdata ()
+(defun org-roam-ui--make-graphdata ()
   "Get roam data, make JSON, send through websocket to org-roam-ui."
   (let* ((nodes-names
           [id
