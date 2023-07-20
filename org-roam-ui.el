@@ -401,7 +401,7 @@ unchanged."
    'nil))
 
 (defun org-roam-ui--make-graphdata ()
-  "Get roam data, make JSON, send through websocket to org-roam-ui."
+  "Get roam data and make JSON"
   (let* ((nodes-names
           [id
            file
@@ -453,31 +453,13 @@ unchanged."
       (message "[org-roam-ui] You are not using the latest version of org-roam.
 This database model won't be supported in the future, please consider upgrading."))
     (json-encode
-                                                `((type . "graphdata")
-                                                  (data . ,response)))))
+     `((type . "graphdata")
+       (data . ,response)))))
 
 (defun org-roam-ui--send-graphdata ()
   "Send roam data through websocket to org-roam-ui."
   (websocket-send-text org-roam-ui-ws-socket (org-roam-ui--make-graphdata)))
 
-(defun org-roam-ui--export-graphdata (file)
-  "Create a JSON-file containting graphdata."
-  (write-region (org-roam-ui--make-graphdata) nil file))
-
-;;;###autoload
-(defun org-roam-ui-export ()
-  "Export `org-roam-ui's-data for usage as static webserver."
-  (interactive)
-  (let* ((dir (read-file-name "Specify output directory:"))
-        (graphdata-file (concat (file-name-as-directory dir) "graphdata.json"))
-        (notes-dir (concat (file-name-as-directory dir) "notes/")))
-    (org-roam-ui--export-graphdata graphdata-file)
-    (make-directory notes-dir :parents)
-    (mapcar (lambda (id)
-              (let* ((cid (car id))
-                     (content (org-roam-ui--get-text cid)))
-                (write-region content nil (concat notes-dir cid) 'append)))
-            (org-roam-db-query "select id from nodes;"))))
 
 (defun org-roam-ui--filter-citations (links)
   "Filter out the citations from LINKS."
@@ -590,7 +572,7 @@ from all other links."
               (setq ui-theme doom-theme))
           (setq ui-theme (org-roam-ui-get-theme)))
       (when org-roam-ui-custom-theme
-		(setq ui-theme org-roam-ui-custom-theme)))
+        org-roam-ui-custom-theme))
     ui-theme))
 
 
@@ -606,9 +588,6 @@ from all other links."
           (attach-dir (if (boundp 'org-attach-id-dir)
                           org-attach-id-dir
                         (expand-file-name ".attach/" org-directory)))
-          (use-inheritance (if (boundp 'org-attach-use-inheritance)
-                            org-attach-use-inheritance
-                            nil))
           (sub-dirs (org-roam-ui-find-subdirectories)))
       (websocket-send-text org-roam-ui-ws-socket
                            (json-encode
@@ -620,8 +599,6 @@ from all other links."
                                       ,daily-dir)
                                      ("attachDir" .
                                       ,attach-dir)
-                                     ("useInheritance" .
-                                      ,use-inheritance)
                                      ("roamDir" . ,org-roam-directory)
                                      ("katexMacros" . ,org-roam-ui-latex-macros))))))))
 
@@ -712,30 +689,6 @@ Optionally with ID (string), SPEED (number, ms) and PADDING (number, px)."
                                                    (padding . ,padding))))))
     (message "No node found.")))
 
-
-(defun org-roam-ui-change-local-graph (&optional id manipulation)
-  "Add or remove current node to the local graph. If not in local mode, open local-graph for this node."  
-  (interactive)
-  (if-let ((node (or id (org-roam-id-at-point))))
-      (websocket-send-text org-roam-ui-ws-socket
-                           (json-encode `((type . "command")
-                                          (data . ((commandName . "change-local-graph")
-                                                   (id . ,node)
-                                                   (manipulation . ,(or manipulation "add")))))))
-    (message "No node found.")))
-
-;;;###autoload
-(defun org-roam-ui-add-to-local-graph (&optional id)
-  "Add current node to the local graph. If not in local mode, open local-graph for this node."
-  (interactive)
-  (org-roam-ui-change-local-graph id "add"))
-
-;;;###autoload
-(defun org-roam-ui-remove-from-local-graph (&optional id)
-  "Remove current node from the local graph. If not in local mode, open local-graph for this node."
-  (interactive)
-  (org-roam-ui-change-local-graph id "remove"))
-
 ;;;###autoload
 (defun org-roam-ui-sync-theme ()
   "Sync your current Emacs theme with org-roam-ui."
@@ -766,3 +719,4 @@ Optionally with ID (string), SPEED (number, ms) and PADDING (number, px)."
 
 (provide 'org-roam-ui)
 ;;; org-roam-ui.el ends here
+
