@@ -456,6 +456,28 @@ This database model won't be supported in the future, please consider upgrading.
                                                 `((type . "graphdata")
                                                   (data . ,response))))))
 
+(defun org-roam-ui--send-graphdata ()
+  "Send roam data through websocket to org-roam-ui."
+  (websocket-send-text org-roam-ui-ws-socket (org-roam-ui--make-graphdata)))
+
+(defun org-roam-ui--export-graphdata (file)
+  "Create a JSON-file containting graphdata."
+  (write-region (org-roam-ui--make-graphdata) nil file))
+
+;;;###autoload
+(defun org-roam-ui-export ()
+  "Export `org-roam-ui's-data for usage as static webserver."
+  (interactive)
+  (let* ((dir (read-file-name "Specify output directory:"))
+        (graphdata-file (concat (file-name-as-directory dir) "graphdata.json"))
+        (notes-dir (concat (file-name-as-directory dir) "notes/")))
+    (org-roam-ui--export-graphdata graphdata-file)
+    (make-directory notes-dir :parents)
+    (mapcar (lambda (id)
+              (let* ((cid (car id))
+                     (content (org-roam-ui--get-text cid)))
+                (write-region content nil (concat notes-dir cid) 'append)))
+            (org-roam-db-query "select id from nodes;"))))
 
 (defun org-roam-ui--filter-citations (links)
   "Filter out the citations from LINKS."
