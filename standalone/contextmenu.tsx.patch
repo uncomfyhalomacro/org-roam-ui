@@ -1,0 +1,102 @@
+--- contextmenu.tsx.orig	2023-07-20 20:40:53.812038453 +0800
++++ contextmenu.tsx	2023-07-20 20:44:45.798776095 +0800
+@@ -125,21 +125,6 @@
+                   </MenuItem>
+                 </>
+               )}
+-              {!target?.properties?.FILELESS ? (
+-                <MenuItem
+-                  icon={<EditIcon />}
+-                  onClick={() => openNodeInEmacs(target as OrgRoamNode, webSocket)}
+-                >
+-                  Open in Emacs
+-                </MenuItem>
+-              ) : (
+-                <MenuItem icon={<AddIcon />} onClick={() => createNodeInEmacs(target, webSocket)}>
+-                  Create node
+-                </MenuItem>
+-              )}
+-              {target?.properties?.ROAM_REFS && (
+-                <MenuItem icon={<ExternalLinkIcon />}>Open in Zotero</MenuItem>
+-              )}
+               {scope.nodeIds.length === 0 && (
+                 <MenuItem icon={<BiNetworkChart />} onClick={() => handleLocal(target!, 'replace')}>
+                   Open local graph
+@@ -175,77 +160,6 @@
+                             </Box>
+                         </MenuItem> */}
+ 
+-              <MenuItem
+-                icon={<ViewIcon />}
+-                onClick={() => {
+-                  setPreviewNode(target)
+-                }}
+-              >
+-                Preview
+-              </MenuItem>
+-              {target?.level === 0 && (
+-                <MenuItem
+-                  closeOnSelect={false}
+-                  icon={<DeleteIcon color="red.500" />}
+-                  color="red.500"
+-                  onClick={onOpen}
+-                >
+-                  Permanently delete note
+-                </MenuItem>
+-              )}
+-            </>
+-          ) : (
+-            <TagMenu {...{ target, tagColors, filter, setTagColors, setFilter }} />
+-          )}
+-        </MenuList>
+-      </Menu>
+-      {typeof target !== 'string' && (
+-        <Modal isCentered isOpen={isOpen} onClose={onClose}>
+-          <ModalOverlay />
+-          <ModalContent zIndex="popover">
+-            <ModalHeader>Delete node?</ModalHeader>
+-            <ModalCloseButton />
+-            <ModalBody>
+-              <VStack spacing={4} display="flex" alignItems="flex-start">
+-                <Text>This will permanently delete your note:</Text>
+-                <Text fontWeight="bold">{target?.title}</Text>
+-                {target?.level !== 0 && (
+-                  <Text>
+-                    This will only delete the from this heading until but not including the next
+-                    node. Your parent file and all other nodes will not be deleted.
+-                  </Text>
+-                )}
+-                <Text>Are you sure you want to do continue?</Text>
+-              </VStack>
+-            </ModalBody>
+-            <ModalFooter>
+-              <Button
+-                mr={3}
+-                onClick={() => {
+-                  console.log('closing')
+-                  onClose()
+-                  menuClose()
+-                }}
+-              >
+-                Cancel
+-              </Button>
+-              <Button
+-                variant="link"
+-                colorScheme="red"
+-                ml={3}
+-                onClick={() => {
+-                  console.log('aaaaa')
+-                  deleteNodeInEmacs(target!, webSocket)
+-                  onClose()
+-                  menuClose()
+-                }}
+-              >
+-                Delete node
+-              </Button>
+-            </ModalFooter>
+-          </ModalContent>
+-        </Modal>
+-      )}
+     </>
+   )
+ }
